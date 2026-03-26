@@ -3,653 +3,585 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bureau Star Rating Quiz</title>
-  <link rel="stylesheet" href="bureau-quiz.css">
+  <title>Rated: Revenge Is Starred | Bureau HQ</title>
+  <style>
+    /* ═══════════════════════════════════════════════
+       DESIGN TOKENS
+    ═══════════════════════════════════════════════ */
+    :root {
+      --bureau-dark:   #0d0d0d;
+      --bureau-grey:   #1a1a1a;
+      --bureau-mid:    #2a2a2a;
+      --bureau-border: #3a3a3a;
+      --bureau-muted:  #666;
+      --bureau-light:  #ccc;
+      --bureau-white:  #f0ece4;
+      --star-1:        #8a8a8a;
+      --star-3:        #c9a84c;
+      --star-5:        #cc2200;
+      --font-mono:     'Courier New', Courier, monospace;
+      --font-serif:    Georgia, 'Times New Roman', serif;
+    }
+
+    /* ═══════════════════════════════════════════════
+       RESET
+    ═══════════════════════════════════════════════ */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* ═══════════════════════════════════════════════
+       SKIP NAV (ACCESSIBILITY)
+    ═══════════════════════════════════════════════ */
+    .skip-nav {
+      position: absolute;
+      top: -100%;
+      left: 0;
+      background: var(--star-5);
+      color: var(--bureau-white);
+      font-family: var(--font-mono);
+      font-size: .8rem;
+      letter-spacing: .1em;
+      padding: 10px 20px;
+      text-decoration: none;
+      z-index: 9999;
+      transition: top .15s;
+    }
+    .skip-nav:focus {
+      top: 0;
+    }
+
+    /* ═══════════════════════════════════════════════
+       BASE
+    ═══════════════════════════════════════════════ */
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background-color: var(--bureau-dark);
+      color: var(--bureau-white);
+      font-family: var(--font-mono);
+      min-height: 100vh;
+      /* 40px grid texture */
+      background-image:
+        linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+
+    /* ═══════════════════════════════════════════════
+       FOCUS RINGS (ACCESSIBILITY)
+    ═══════════════════════════════════════════════ */
+    :focus-visible {
+      outline: 2px solid var(--star-5);
+      outline-offset: 3px;
+    }
+
+    /* ═══════════════════════════════════════════════
+       HEADER BAR
+    ═══════════════════════════════════════════════ */
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(13, 13, 13, .92);
+      backdrop-filter: blur(6px);
+      border-bottom: 1px solid var(--bureau-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 24px;
+    }
+
+    .header-id {
+      font-size: .65rem;
+      letter-spacing: .25em;
+      color: var(--bureau-muted);
+      text-transform: uppercase;
+    }
+
+    .header-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: .65rem;
+      letter-spacing: .2em;
+      color: var(--star-5);
+      text-transform: uppercase;
+    }
+
+    .pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--star-5);
+      animation: pulse 1.6s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50%       { opacity: .35; transform: scale(.7); }
+    }
+
+    /* ═══════════════════════════════════════════════
+       MAIN LAYOUT
+    ═══════════════════════════════════════════════ */
+    main {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 60px 24px 80px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    /* ═══════════════════════════════════════════════
+       TOP BADGE
+    ═══════════════════════════════════════════════ */
+    .top-badge {
+      font-size: .62rem;
+      letter-spacing: .3em;
+      color: var(--bureau-muted);
+      text-transform: uppercase;
+      margin-bottom: 40px;
+    }
+
+    /* ═══════════════════════════════════════════════
+       BOOK COVER CARD
+    ═══════════════════════════════════════════════ */
+    .cover-card {
+      width: 220px;
+      background: var(--bureau-grey);
+      border: 1px solid var(--bureau-border);
+      border-radius: 2px;
+      padding: 32px 24px 28px;
+      margin-bottom: 36px;
+      position: relative;
+      box-shadow:
+        0 0 40px rgba(204, 34, 0, .18),
+        0 0 80px rgba(204, 34, 0, .08),
+        inset 0 0 30px rgba(204, 34, 0, .05);
+      animation: coverGlow 4s ease-in-out infinite alternate;
+    }
+
+    @keyframes coverGlow {
+      from { box-shadow: 0 0 30px rgba(204,34,0,.15), 0 0 60px rgba(204,34,0,.06), inset 0 0 20px rgba(204,34,0,.04); }
+      to   { box-shadow: 0 0 50px rgba(204,34,0,.28), 0 0 100px rgba(204,34,0,.12), inset 0 0 40px rgba(204,34,0,.08); }
+    }
+
+    .cover-stars {
+      font-size: 1rem;
+      color: var(--star-5);
+      letter-spacing: .15em;
+      margin-bottom: 18px;
+    }
+
+    .cover-title {
+      font-family: var(--font-mono);
+      font-size: .72rem;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--bureau-white);
+      line-height: 1.7;
+      margin-bottom: 18px;
+    }
+
+    .cover-title strong {
+      display: block;
+      font-size: .8rem;
+      letter-spacing: .2em;
+      color: var(--bureau-white);
+      margin-bottom: 4px;
+    }
+
+    .cover-title em {
+      font-style: normal;
+      font-size: .62rem;
+      color: var(--bureau-muted);
+      letter-spacing: .15em;
+    }
+
+    .cover-image-placeholder {
+      width: 100%;
+      height: 120px;
+      border: 1px dashed var(--bureau-border);
+      border-radius: 1px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 14px;
+    }
+
+    .cover-image-placeholder span {
+      font-size: .58rem;
+      letter-spacing: .15em;
+      color: var(--bureau-muted);
+      text-transform: uppercase;
+    }
+
+    /* ═══════════════════════════════════════════════
+       SECONDARY BADGE
+    ═══════════════════════════════════════════════ */
+    .secondary-badge {
+      font-size: .6rem;
+      letter-spacing: .3em;
+      color: var(--bureau-muted);
+      text-transform: uppercase;
+      margin-bottom: 28px;
+      border: 1px solid var(--bureau-border);
+      padding: 6px 14px;
+      border-radius: 2px;
+    }
+
+    /* ═══════════════════════════════════════════════
+       HEADLINE
+    ═══════════════════════════════════════════════ */
+    .headline {
+      font-family: var(--font-serif);
+      font-size: clamp(2rem, 6vw, 3rem);
+      font-weight: 700;
+      line-height: 1.2;
+      color: var(--bureau-white);
+      letter-spacing: -.01em;
+      margin-bottom: 14px;
+    }
+
+    .subline {
+      font-family: var(--font-serif);
+      font-size: clamp(1.1rem, 3vw, 1.4rem);
+      font-style: italic;
+      color: var(--star-5);
+      margin-bottom: 28px;
+    }
+
+    /* ═══════════════════════════════════════════════
+       TAGLINE
+    ═══════════════════════════════════════════════ */
+    .tagline {
+      font-family: var(--font-mono);
+      font-size: .82rem;
+      letter-spacing: .08em;
+      color: var(--star-3);
+      line-height: 1.7;
+      margin-bottom: 16px;
+    }
+
+    .teaser {
+      font-family: var(--font-mono);
+      font-size: .82rem;
+      font-style: italic;
+      color: var(--bureau-light);
+      line-height: 1.7;
+      margin-bottom: 36px;
+      padding: 0 8px;
+    }
+
+    /* ═══════════════════════════════════════════════
+       SCAN DIVIDER
+    ═══════════════════════════════════════════════ */
+    .scan-divider {
+      width: 100%;
+      position: relative;
+      height: 28px;
+      margin-bottom: 36px;
+      overflow: hidden;
+    }
+
+    .scan-divider::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: var(--bureau-border);
+      transform: translateY(-50%);
+    }
+
+    .scan-line {
+      position: absolute;
+      top: 0;
+      left: -20%;
+      width: 20%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(204,34,0,.5), transparent);
+      animation: scan 3s linear infinite;
+    }
+
+    @keyframes scan {
+      0%   { left: -20%; }
+      100% { left: 120%; }
+    }
+
+    .scan-label {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--bureau-dark);
+      padding: 0 12px;
+      font-size: .55rem;
+      letter-spacing: .3em;
+      color: var(--bureau-muted);
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    /* ═══════════════════════════════════════════════
+       HOOK PARAGRAPH
+    ═══════════════════════════════════════════════ */
+    .hook {
+      font-family: var(--font-mono);
+      font-size: .88rem;
+      color: var(--bureau-light);
+      line-height: 1.85;
+      margin-bottom: 44px;
+      padding: 24px;
+      border: 1px solid var(--bureau-border);
+      border-radius: 2px;
+      background: var(--bureau-grey);
+      text-align: left;
+      position: relative;
+    }
+
+    .hook::before {
+      content: '▓ DECLASSIFIED EXCERPT ▓';
+      display: block;
+      font-size: .55rem;
+      letter-spacing: .3em;
+      color: var(--bureau-muted);
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    /* ═══════════════════════════════════════════════
+       CTA BUTTON
+    ═══════════════════════════════════════════════ */
+    .cta-wrap {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .btn-cta {
+      display: inline-block;
+      width: 100%;
+      max-width: 480px;
+      background: var(--star-5);
+      color: var(--bureau-white);
+      font-family: var(--font-mono);
+      font-size: .88rem;
+      font-weight: 700;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      text-decoration: none;
+      padding: 18px 28px;
+      border-radius: 2px;
+      border: none;
+      cursor: pointer;
+      position: relative;
+      /* 3D press effect */
+      box-shadow:
+        0 4px 0 #7a1400,
+        0 6px 12px rgba(204,34,0,.3);
+      transition: transform .1s ease, box-shadow .1s ease;
+      animation: ctaPulse 3s ease-in-out infinite;
+    }
+
+    @keyframes ctaPulse {
+      0%, 100% { box-shadow: 0 4px 0 #7a1400, 0 6px 12px rgba(204,34,0,.3); }
+      50%       { box-shadow: 0 4px 0 #7a1400, 0 6px 24px rgba(204,34,0,.5); }
+    }
+
+    .btn-cta:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 0 #7a1400, 0 10px 20px rgba(204,34,0,.4);
+      animation: none;
+    }
+
+    .btn-cta:active {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 #7a1400, 0 2px 6px rgba(204,34,0,.3);
+    }
+
+    .microcopy-1 {
+      font-size: .6rem;
+      letter-spacing: .25em;
+      color: var(--bureau-muted);
+      text-transform: uppercase;
+    }
+
+    .microcopy-2 {
+      font-size: .62rem;
+      letter-spacing: .1em;
+      color: var(--bureau-muted);
+      font-style: italic;
+    }
+
+    /* ═══════════════════════════════════════════════
+       FOOTER
+    ═══════════════════════════════════════════════ */
+    footer {
+      border-top: 1px solid var(--bureau-border);
+      padding: 28px 24px;
+      text-align: center;
+    }
+
+    .footer-disclaimer {
+      font-size: .65rem;
+      letter-spacing: .08em;
+      color: var(--bureau-muted);
+      line-height: 1.8;
+      margin-bottom: 10px;
+    }
+
+    .footer-copy {
+      font-size: .6rem;
+      letter-spacing: .2em;
+      color: var(--bureau-border);
+      text-transform: uppercase;
+    }
+
+    /* ═══════════════════════════════════════════════
+       REDUCED MOTION
+    ═══════════════════════════════════════════════ */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+      }
+      html { scroll-behavior: auto; }
+    }
+
+    /* ═══════════════════════════════════════════════
+       RESPONSIVE — 375px
+    ═══════════════════════════════════════════════ */
+    @media (max-width: 480px) {
+      .site-header {
+        padding: 10px 16px;
+      }
+      .header-id {
+        font-size: .55rem;
+        letter-spacing: .12em;
+      }
+      .header-status {
+        font-size: .55rem;
+        letter-spacing: .12em;
+      }
+      main {
+        padding: 40px 16px 60px;
+      }
+      .cover-card {
+        width: 185px;
+      }
+      .hook {
+        font-size: .82rem;
+        padding: 18px;
+      }
+      .btn-cta {
+        font-size: .78rem;
+        padding: 16px 20px;
+      }
+    }
+  </style>
 </head>
 <body>
 
-<!-- BUREAU STAR RATING QUIZ -->
-<!-- Screen 0: Age Gate -->
-<div id="ageGate" class="screen active">
-  <div class="bureau-header">
-    <div class="bureau-stamp">▓ BUREAU FILE ▓</div>
-    <h1 class="bureau-title">Initiating Clearance Check</h1>
-  </div>
-  <div class="card">
-    <p class="age-prompt">Before we open your Bureau file, confirm your age:</p>
-    <div class="age-options">
-      <label class="age-option">
-        <input type="radio" name="age" value="18plus">
-        <span>I am 18 or older</span>
-      </label>
-      <label class="age-option">
-        <input type="radio" name="age" value="under18">
-        <span>I am under 18</span>
-      </label>
-    </div>
-    <button class="btn btn-primary" onclick="handleAgeGate()">Proceed to the Test →</button>
-  </div>
-  <p class="disclaimer">This quiz collects your name and email to deliver your result. Participants must be 18 or older.</p>
-</div>
+  <!-- Skip Navigation -->
+  <a class="skip-nav" href="#main-content">Skip to main content</a>
 
-<!-- Screen: Under 18 Hard Stop -->
-<div id="under18" class="screen">
-  <div class="bureau-header">
-    <div class="bureau-stamp">▓ BUREAU FILE ▓</div>
-    <h1 class="bureau-title">Access Not Granted</h1>
-  </div>
+  <!-- ═══════════════════════════════════════════════
+       HEADER
+  ═══════════════════════════════════════════════ -->
+  <header class="site-header" role="banner">
+    <span class="header-id">Bureau · Classification System · Active</span>
+    <span class="header-status" aria-label="File status: Open">
+      <span class="pulse-dot" aria-hidden="true"></span>
+      File Status: Open
+    </span>
+  </header>
 
-  <div class="card">
-    <p class="text-center" style="margin-bottom:20px;">
-      The Bureau only opens files for agents 18 and older.
-    </p>
-    <p class="text-center" style="margin-bottom:20px;">
-      Come back when you're of age — the experiment will still be running.
-    </p>
-    <p class="text-center" style="margin-bottom:24px;">
-      In the meantime, ask a parent, your parents, or a friend who's 18+ to take the quiz and show you their rating.
-    </p>
-    <p class="text-center italic" style="margin-bottom:28px;">
-      Bet you already know which star they'll get.
+  <!-- ═══════════════════════════════════════════════
+       MAIN
+  ═══════════════════════════════════════════════ -->
+  <main id="main-content" aria-label="Rated: Revenge Is Starred — Bureau landing page">
+
+    <!-- Top Badge -->
+    <p class="top-badge" aria-label="File number RVS-001, Open">
+      <span aria-hidden="true">▓▓▓</span> File #RVS-001 · Open <span aria-hidden="true">▓▓▓</span>
     </p>
 
-    <hr class="divider">
-
-    <div style="text-align:center; margin-top:24px;">
-      <p class="small uppercase text-muted" style="margin-bottom:14px;">Send Them the Quiz</p>
-
-      <div style="background: var(--bureau-mid); border: 1px solid var(--bureau-border); padding: 12px; border-radius: 2px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
-        <input type="text" id="quizLinkInput" value="yoursite.com/bureau-star-rating" readonly style="background: transparent; border: none; color: var(--bureau-light); font-family: var(--font); font-size: .85rem; flex: 1; outline: none; cursor: pointer;" onclick="this.select()">
-        <button class="btn" style="padding: 8px 16px; font-size: .75rem;" onclick="copyQuizLink()">Copy Link</button>
+    <!-- Book Cover -->
+    <figure class="cover-card" aria-label="Book cover for Rated: Revenge Is Starred by CC Francis">
+      <div class="cover-stars" aria-label="Five red stars">★★★★★</div>
+      <div class="cover-title">
+        <strong>Rated: Revenge Is Starred</strong>
+        <em>by CC Francis</em>
       </div>
-
-      <button class="btn btn-primary" onclick="textParent()" style="margin-bottom: 10px;">📱 Text This to a Parent</button>
-      <p class="confirm-msg" id="linkCopied" style="display: none;">✓ Link copied!</p>
-    </div>
-  </div>
-  <hr class="divider">
-
-  <div style="text-align: center;">
-    <p class="thanks-msg">Thank you.</p>
-    <button class="btn-close" onclick="closeQuiz()">✕ Close</button>
-  </div>
-
-  </div>
-
-  <p class="disclaimer">No data has been collected from this session.</p>
-</div>
-
-<!-- Screen 1: Landing -->
-<div id="landing" class="screen">
-  <div class="bureau-header">
-    <div class="bureau-stamp">▓ BUREAU FILE ▓</div>
-    <h1 class="bureau-title">What Is Your Bureau Star Rating?</h1>
-    <p class="bureau-sub">Find out how a dystopian Bureau would rate you on paper. Your results are 100% made-up, but the fun (and mild panic) is real.</p>
-    <p class="bureau-credit">Based on the YA thriller Rated: Revenge Is Starred by CC Francis.</p>
-  </div>
-  <div class="card">
-    <div class="card-label">Open Your Bureau File</div>
-    <div class="form-group">
-      <label>First Name</label>
-      <input type="text" id="userName" required>
-      <span class="field-error" id="nameError">Please enter your first name.</span>
-    </div>
-    <div class="form-group">
-      <label>Email Address</label>
-      <input type="email" id="userEmail" required>
-      <span class="field-error" id="emailError">Please enter a valid email address.</span>
-    </div>
-    <div class="opt-in-wrap" id="optInWrap">
-      <input type="checkbox" id="optIn">
-      <div>
-        <label class="opt-in-label" for="optIn">Yes — send me Bureau transmissions and launch updates for Rated: Revenge Is Starred.</label>
-        <p class="opt-in-legal">By checking this box you agree to receive occasional email updates. This quiz is open to participants 18 or older. We will never sell your information. Unsubscribe anytime.</p>
+      <div class="cover-image-placeholder" role="img" aria-label="Cover image placeholder">
+        <span>Cover Image</span>
       </div>
-    </div>
-    <span class="field-error" id="optInError">Please confirm you'd like to receive Bureau transmissions to continue.</span>
-    <button class="btn btn-primary" onclick="startQuiz()">Start the Bureau Test →</button>
-  </div>
-  <p class="disclaimer">This is a personality quiz for marketing a YA novel. Participation is voluntary, results are not real.</p>
-</div>
+    </figure>
 
-<!-- Screen 2: Quiz -->
-<div id="quiz" class="screen">
-  <div class="bureau-header">
-    <div class="bureau-stamp">▓ BUREAU FILE ▓</div>
-    <h1 class="bureau-title">What Is Your Bureau Star Rating?</h1>
-  </div>
-  <div class="text-center" style="margin-bottom:28px;">
-    <p class="small uppercase text-muted">Answer All 5 Fields</p>
-    <div class="progress-dots" id="progressDots">
-      <span class="dot"></span>
-      <span class="dot"></span>
-      <span class="dot"></span>
-      <span class="dot"></span>
-      <span class="dot"></span>
-    </div>
-  </div>
-  <div id="questionsContainer"></div>
-  <button class="btn btn-primary" id="submitBtn" onclick="calculateResult()" disabled>Get My Bureau Star Rating →</button>
-  <p class="disclaimer">Results are fictional.</p>
-</div>
+    <!-- Secondary Badge -->
+    <p class="secondary-badge" aria-label="File RVS-001 Open">
+      <span aria-hidden="true">▓</span> File #RVS-001 Open <span aria-hidden="true">▓</span>
+    </p>
 
-<!-- Screen 3: Result -->
-<div id="result" class="screen">
-  <div class="bureau-header">
-    <div class="bureau-stamp">▓ BUREAU FILE ▓</div>
-    <h1 class="bureau-title">Classification Complete</h1>
-  </div>
+    <!-- Headline -->
+    <h1 class="headline">Your Rating Isn't Who You Are.</h1>
+    <p class="subline">But in the Bureau, it's everything.</p>
 
-  <div class="card">
-    <div class="result-rating-label">Bureau Star Rating:</div>
-    <h2 class="result-headline" id="resultHeadline"></h2>
-    <p class="result-extra" id="resultExtra"></p>
+    <!-- Tagline -->
+    <p class="tagline">One rating. One mistake. One young woman who refuses to disappear.</p>
 
-    <hr class="divider">
+    <!-- Teaser -->
+    <p class="teaser">"The Bureau says your rating is the truth. She's about to prove it's a weapon."</p>
 
-    <div id="secretNote">
-      <button class="secret-toggle" onclick="toggleSecret()">▼ Secret Note from the Bureau — click to reveal</button>
-      <p class="secret-text" id="secretText" style="display: none;"></p>
+    <!-- Scan Divider -->
+    <div class="scan-divider" role="separator" aria-hidden="true">
+      <div class="scan-line"></div>
+      <span class="scan-label">Scanning · · · · ·</span>
     </div>
 
-    <hr class="divider">
+    <!-- Hook Paragraph -->
+    <article class="hook">
+      In a world where a single star can end your future, a nineteen-year-old plays by the rules — until the Bureau plays her. What begins as revenge becomes something far more dangerous — the truth about who's been pulling the stars all along — and whether the reality she trusts is the only one.
+    </article>
 
-    <div class="section-label">Your Actions</div>
-
-    <button class="btn btn-primary" onclick="toggleShareCaptions()" style="margin-bottom: 14px;">↗ Share My Rating</button>
-
-    <div id="captionChooser" style="display:none; margin-bottom: 20px; padding: 16px; border: 1px dashed var(--bureau-border); border-radius: 2px;">
-      <p class="small uppercase text-muted" style="margin-bottom: 12px;">Choose a caption for your post:</p>
-
-      <button class="caption-btn" onclick="copyCaption(event, 'long')">
-        <strong>Long:</strong> "The Bureau just filed my Bureau Star Rating. I got <span id="captionLong"></span>. I'm officially part of the experiment — want in? Take the quiz and tell me what you get. #RatedRevengeIsStarred"
-      </button>
-
-      <button class="caption-btn" onclick="copyCaption(event, 'short')">
-        <strong>Short:</strong> "The Bureau rated me <span id="captionShort"></span>. You in? #RatedRevengeIsStarred"
-      </button>
-
-      <p class="confirm-msg" id="captionCopied" style="display: none;">✓ Caption copied! Paste this with your Bureau Badge on your favorite platform.</p>
+    <!-- CTA -->
+    <div class="cta-wrap">
+      <a
+        class="btn-cta"
+        href="bureau-quiz.html"
+        aria-label="Find out your Bureau Star Rating — takes approximately 2 minutes"
+      >→ Find Out Your Bureau Star Rating</a>
+      <p class="microcopy-1">5 Queries · Approx. 2 Min · Results Classified</p>
+      <p class="microcopy-2">Official Bureau Assessment · Non&#8209;completion will be noted.</p>
     </div>
 
-    <hr class="divider">
+  </main>
 
-    <div class="section-label">Share on Social Media</div>
-
-    <div class="social-grid">
-      <button class="btn-social" onclick="shareToX()"><span class="icon">𝕏</span> Post on X</button>
-      <button class="btn-social" onclick="shareToFacebook()"><span class="icon">f</span> Facebook</button>
-      <button class="btn-social" onclick="shareToInstagram()"><span class="icon">📷</span> Instagram</button>
-      <button class="btn-social" onclick="shareToTikTok()"><span class="icon">▶</span> TikTok</button>
-      <button class="btn-social" onclick="shareToLinkedIn()"><span class="icon">in</span> LinkedIn</button>
-      <button class="btn-social" onclick="shareToPinterest()"><span class="icon">📌</span> Pinterest</button>
-    </div>
-
-    <p class="confirm-msg" id="socialCopied" style="display: none;">📋 Caption copied! Open your app and paste.</p>
-
-    <hr class="divider">
-
-    <div class="section-label">Invite Friends & Family</div>
-    <p class="text-center text-muted" style="font-size: .85rem; margin-bottom: 14px;">What's their Bureau Star Rating? Dare them to find out.</p>
-
-    <div style="background: var(--bureau-mid); border: 1px solid var(--bureau-border); padding: 12px; border-radius: 2px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
-      <input type="text" id="resultQuizLink" value="yoursite.com/bureau-star-rating" readonly style="background: transparent; border: none; color: var(--bureau-light); font-family: var(--font); font-size: .85rem; flex: 1; outline: none; cursor: pointer;" onclick="this.select()">
-      <button class="btn" style="padding: 8px 16px; font-size: .75rem;" onclick="copyInviteLink()">Copy Link</button>
-    </div>
-
-    <div class="social-grid">
-      <button class="btn-social" onclick="inviteViaText()"><span class="icon">📱</span> Text</button>
-      <button class="btn-social" onclick="inviteViaWhatsApp()"><span class="icon">💬</span> WhatsApp</button>
-      <button class="btn-social" onclick="inviteViaEmail()"><span class="icon">📧</span> Email</button>
-      <button class="btn-social" onclick="inviteMore()"><span class="icon">•••</span> More</button>
-    </div>
-
-    <p class="confirm-msg" id="inviteCopied" style="display: none;">✓ Link copied!</p>
-
-    <hr class="divider">
-
-    <div style="text-align: center;">
-      <p class="thanks-msg">Thanks for playing!</p>
-      <button class="btn-close" onclick="closeQuiz()">✕ Close</button>
-    </div>
-  </div>
-
-  <p class="disclaimer">Results are fictional. Share with friends!</p>
-</div>
-
-<script>
-// ═══════════════════════════════════════════════════════
-// BUREAU STAR RATING QUIZ — JAVASCRIPT
-// Complete quiz logic with scoring, screen management,
-// and result calculation
-// ═══════════════════════════════════════════════════════
-
-// ── Quiz Data ──
-const QUESTIONS = [
-{
-id: 1,
-text: "When someone in power lies and you can prove it, you:",
-answers: [
-{ key: "A", text: "Stay quiet. It's not your problem.", points: 0 },
-{ key: "B", text: "Tell a friend, but don't rock the boat.", points: 1 },
-{ key: "C", text: "Leak receipts anonymously. Let the truth burn.", points: 2 },
-{ key: "D", text: "Walk into their office with the evidence and dare them to deny it.", points: 3 }
-]
-},
-{
-id: 2,
-text: "A stranger is being publicly humiliated online for something you're not sure they did. You:",
-answers: [
-{ key: "A", text: "Scroll past. Not your business.", points: 0 },
-{ key: "B", text: "Watch, but don't join in.", points: 1 },
-{ key: "C", text: "Dig for the real story before you take a side.", points: 2 },
-{ key: "D", text: "Start pulling records. If they're innocent, you'll blow the accuser up.", points: 3 }
-]
-},
-{
-id: 3,
-text: "Rules are:",
-answers: [
-{ key: "A", text: "There to keep everyone safe.", points: 0 },
-{ key: "B", text: "There for most people, most of the time.", points: 1 },
-{ key: "C", text: "Suggestions you weigh against the fallout.", points: 2 },
-{ key: "D", text: "Bars on a cage. You're already looking for the weak points.", points: 3 }
-]
-},
-{
-id: 4,
-text: "Someone you love is in danger because of a system \"too big to fight.\" You:",
-answers: [
-{ key: "A", text: "Accept it. You can't change everything.", points: 0 },
-{ key: "B", text: "Look for official appeal routes.", points: 1 },
-{ key: "C", text: "Start planning an end-run around the rules.", points: 2 },
-{ key: "D", text: "Kick the doors in and worry about consequences later.", points: 3 }
-]
-},
-{
-id: 5,
-text: "If you could see your star rating, would you want to know?",
-answers: [
-{ key: "A", text: "No. It would just stress me out.", points: 0 },
-{ key: "B", text: "Maybe, if I could change it.", points: 1 },
-{ key: "C", text: "Yes. Information is leverage.", points: 2 },
-{ key: "D", text: "Absolutely. Then I'd know exactly what I'm fighting.", points: 3 }
-]
-}
-];
-
-// Result data
-const RESULTS = {
-1: {
-stars: "1 STAR",
-label: "QUIET CIVILIAN",
-color: "color-1",
-headline: "★ 1 STAR — QUIET CIVILIAN",
-extra: "The Bureau would like to thank you for your quiet cooperation.",
-secret: "Stay small, stay quiet, and the system may never see you coming."
-},
-3: {
-stars: "3 STARS",
-label: "CONTAINED ASSET",
-color: "color-3",
-headline: "★★★ 3 STARS — CONTAINED ASSET",
-extra: "",
-secret: "You are valuable, but only as long as you stay exactly where we've put you."
-},
-5: {
-stars: "5 STARS",
-label: "ENFORCEMENT-GRADE",
-color: "color-5",
-headline: "★★★★★ 5 STARS — ENFORCEMENT-GRADE",
-extra: "",
-secret: "You were never meant to be safe — you were built to be pointed at a target and released."
-}
-};
-
-// ── State Management ──
-let userAnswers = {};
-let userName = "";
-let userEmail = "";
-let optedIn = false;
-
-// ── Screen Management ──
-function showScreen(screenId) {
-document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-document.getElementById(screenId).classList.add('active');
-window.scrollTo(0, 0);
-}
-
-// ── Age Gate Handler ──
-function handleAgeGate() {
-const selected = document.querySelector('input[name="age"]:checked');
-if (!selected) {
-alert('Please select your age range to continue.');
-return;
-}
-if (selected.value === '18plus') {
-showScreen('landing');
-} else {
-showScreen('under18');
-}
-}
-
-// ── Start Quiz ──
-function startQuiz() {
-userName = document.getElementById('userName').value.trim();
-userEmail = document.getElementById('userEmail').value.trim();
-optedIn = document.getElementById('optIn').checked;
-let valid = true;
-// Clear all previous errors
-['userName', 'userEmail'].forEach(id => {
-document.getElementById(id).classList.remove('input-error');
-});
-document.getElementById('optInWrap').classList.remove('opt-in-error');
-document.querySelectorAll('.field-error').forEach(el => el.classList.remove('visible'));
-// Name check
-if (!userName) {
-document.getElementById('userName').classList.add('input-error');
-document.getElementById('nameError').classList.add('visible');
-valid = false;
-}
-// Email check — empty
-if (!userEmail) {
-document.getElementById('userEmail').classList.add('input-error');
-document.getElementById('emailError').textContent = 'Please enter your email address.';
-document.getElementById('emailError').classList.add('visible');
-valid = false;
-// Email check — format
-} else if (!userEmail.includes('@') || !userEmail.includes('.') || userEmail.indexOf('@') > userEmail.lastIndexOf('.') - 1) {
-document.getElementById('userEmail').classList.add('input-error');
-document.getElementById('emailError').textContent = 'Please enter a valid email address (e.g. name@example.com).';
-document.getElementById('emailError').classList.add('visible');
-valid = false;
-}
-// Opt-in check
-if (!optedIn) {
-document.getElementById('optInWrap').classList.add('opt-in-error');
-document.getElementById('optInError').classList.add('visible');
-valid = false;
-}
-if (!valid) return;
-// All good — proceed
-console.log('User Data:', { userName, userEmail, optedIn });
-renderQuiz();
-showScreen('quiz');
-}
-
-// ── Render Quiz Questions ──
-function renderQuiz() {
-const container = document.getElementById('questionsContainer');
-container.innerHTML = '';
-QUESTIONS.forEach((q, index) => {
-const block = document.createElement('div');
-block.className = 'question-block';
-block.id = `q${q.id}`;
-block.innerHTML = `
-<div class="question-num">Field ${String(index + 1).padStart(2, '0')} of 05</div>
-<div class="question-text">${q.text}</div>
-<div class="answers">
-${q.answers.map(a => `
-<button class="answer-btn" onclick="selectAnswer(event, ${q.id}, '${a.key}', ${a.points})">
-<span class="answer-key">${a.key}.</span>
-<span>${a.text}</span>
-</button>
-`).join('')}
-</div>
-`;
-container.appendChild(block);
-});
-}
-
-// ── Select Answer ──
-function selectAnswer(event, questionId, answerKey, points) {
-// Store answer
-userAnswers[questionId] = { key: answerKey, points };
-// Update UI
-const block = document.getElementById(`q${questionId}`);
-block.classList.add('answered');
-// Highlight selected answer
-block.querySelectorAll('.answer-btn').forEach(btn => {
-btn.classList.remove('selected');
-});
-event.target.closest('.answer-btn').classList.add('selected');
-// Update progress dots
-updateProgressDots();
-// Enable submit if all answered
-checkCompletion();
-}
-
-// ── Update Progress Dots ──
-function updateProgressDots() {
-const dots = document.querySelectorAll('.dot');
-const answered = Object.keys(userAnswers).length;
-dots.forEach((dot, index) => {
-if (index < answered) {
-dot.classList.add('answered');
-} else {
-dot.classList.remove('answered');
-}
-});
-}
-
-// ── Check Completion ──
-function checkCompletion() {
-const submitBtn = document.getElementById('submitBtn');
-if (Object.keys(userAnswers).length === QUESTIONS.length) {
-submitBtn.disabled = false;
-} else {
-submitBtn.disabled = true;
-}
-}
-
-// ── Calculate Result ──
-function calculateResult() {
-const totalPoints = Object.values(userAnswers).reduce((sum, answer) => sum + answer.points, 0);
-// Score banding:
-// 0-4 points → 1 star
-// 5-10 points → 3 stars
-// 11-15 points → 5 stars
-let rating;
-if (totalPoints <= 4) {
-rating = 1;
-} else if (totalPoints <= 10) {
-rating = 3;
-} else {
-rating = 5;
-}
-// Log result (in production, send to ESP with tag rating_1/rating_3/rating_5)
-console.log('Quiz Result:', {
-userName,
-userEmail,
-optedIn,
-totalPoints,
-rating,
-tag: `rating_${rating}`
-});
-showResult(rating);
-}
-
-// ── Toggle Secret Note ──
-function toggleSecret() {
-const text = document.getElementById('secretText');
-const button = document.querySelector('.secret-toggle');
-if (text.style.display === 'block') {
-text.style.display = 'none';
-button.textContent = '▼ Secret Note from the Bureau — click to reveal';
-} else {
-text.style.display = 'block';
-button.textContent = '▲ Secret Note from the Bureau — click to hide';
-}
-}
-
-// ── Close Quiz ──
-function closeQuiz() {
-document.querySelector('.screen.active').classList.remove('active');
-window.scrollTo(0, 0);
-}
-
-// ── Initialize ──
-document.addEventListener('DOMContentLoaded', function() {
-console.log('Bureau Star Rating Quiz initialized');
-console.log('Ready to collect data for ESP integration');
-});
-
-// ── Copy Quiz Link (Under-18 Page) ──
-function copyQuizLink() {
-const input = document.getElementById('quizLinkInput');
-input.select();
-input.setSelectionRange(0, 99999); // For mobile
-navigator.clipboard.writeText(input.value).then(() => {
-const msg = document.getElementById('linkCopied');
-msg.style.display = 'block';
-setTimeout(() => {
-msg.style.display = 'none';
-}, 3000);
-});
-}
-
-// ── Text to Parent (Under-18 Page) ──
-function textParent() {
-const message = encodeURIComponent(
-"Can you take this quiz and show me your Bureau Star Rating? I want to see what you get.\n\n" +
-"yoursite.com/bureau-star-rating\n\n" +
-"#RatedRevengeIsStarred"
-);
-// Try native share first (mobile)
-if (navigator.share) {
-navigator.share({
-title: 'Bureau Star Rating Quiz',
-text: "Can you take this quiz and show me your Bureau Star Rating? I want to see what you get.",
-url: 'yoursite.com/bureau-star-rating'
-}).catch(() => {
-// Fallback to SMS
-window.open(`sms:?body=${message}`, '_blank');
-});
-} else {
-// Desktop/older browsers: open SMS
-window.open(`sms:?body=${message}`, '_blank');
-}
-}
-
-// ── Global result data ──
-let currentRating = 1;
-let currentLabel = "";
-
-// Update showResult() to store rating info
-function showResult(rating) {
-const result = RESULTS[rating];
-currentRating = rating;
-currentLabel = `${result.stars} – ${result.label}`;
-document.getElementById('resultHeadline').textContent = result.headline;
-document.getElementById('resultHeadline').className = `result-headline ${result.color}`;
-const extraEl = document.getElementById('resultExtra');
-if (result.extra) {
-extraEl.textContent = result.extra;
-extraEl.style.display = 'block';
-} else {
-extraEl.style.display = 'none';
-}
-document.getElementById('secretText').textContent = result.secret;
-// Populate caption placeholders
-document.getElementById('captionLong').textContent = currentLabel;
-document.getElementById('captionShort').textContent = currentLabel;
-showScreen('result');
-}
-
-// ── Toggle Share Captions ──
-function toggleShareCaptions() {
-const chooser = document.getElementById('captionChooser');
-chooser.style.display = chooser.style.display === 'none' ? 'block' : 'none';
-}
-
-// ── Copy Caption ──
-function copyCaption(e, type) {
-let text = "";
-if (type === 'long') {
-text = "The Bureau just filed my Bureau Star Rating. I got " + currentLabel + ". I'm officially part of the experiment — want in? Take the quiz and tell me what you get. #RatedRevengeIsStarred";
-} else {
-text = "The Bureau rated me " + currentLabel + ". You in? #RatedRevengeIsStarred";
-}
-navigator.clipboard.writeText(text).then(function() {
-document.querySelectorAll('.caption-btn').forEach(function(btn) {
-btn.classList.remove('selected');
-});
-if (e) { // ← guard: only highlight button when called from a real click
-var clickedBtn = e.target.closest('.caption-btn');
-if (clickedBtn) {
-clickedBtn.classList.add('selected');
-}
-}
-showMessage('captionCopied');
-});
-}
-
-// ── Share to Social Platforms ──
-function shareToX() {
-const text = encodeURIComponent("The Bureau rated me " + currentLabel + ". You in? #RatedRevengeIsStarred\n\nyoursite.com/bureau-star-rating");
-window.open("https://twitter.com/intent/tweet?text=" + text, "_blank");
-}
-function shareToFacebook() {
-window.open("https://www.facebook.com/sharer/sharer.php?u=yoursite.com/bureau-star-rating", "_blank");
-}
-function shareToInstagram() {
-copyCaption(null, 'short');
-showMessage('socialCopied');
-}
-function shareToTikTok() {
-copyCaption(null, 'short');
-showMessage('socialCopied');
-}
-function shareToLinkedIn() {
-window.open("https://www.linkedin.com/sharing/share-offsite/?url=yoursite.com/bureau-star-rating", "_blank");
-}
-function shareToPinterest() {
-const desc = encodeURIComponent("The Bureau rated me " + currentLabel + ". Take the quiz!");
-window.open("https://pinterest.com/pin/create/button/?url=yoursite.com/bureau-star-rating&description=" + desc, "_blank");
-}
-
-// ── Invite Functions ──
-function copyInviteLink() {
-const input = document.getElementById('resultQuizLink');
-input.select();
-navigator.clipboard.writeText(input.value).then(function() {
-showMessage('inviteCopied');
-});
-}
-function inviteViaText() {
-const msg = encodeURIComponent("I just got my Bureau Star Rating — " + currentLabel + ". What's yours? Take the quiz: yoursite.com/bureau-star-rating #RatedRevengeIsStarred");
-window.open("sms:?body=" + msg, "_blank");
-}
-function inviteViaWhatsApp() {
-const msg = encodeURIComponent("I just got my Bureau Star Rating — " + currentLabel + ". What's yours? Take the quiz: yoursite.com/bureau-star-rating");
-window.open("https://wa.me/?text=" + msg, "_blank");
-}
-function inviteViaEmail() {
-const subject = encodeURIComponent("The Bureau just rated me — what's your score?");
-const body = encodeURIComponent("I just got my Bureau Star Rating — " + currentLabel + ". What's yours?\n\nTake the quiz: yoursite.com/bureau-star-rating\n\n#RatedRevengeIsStarred");
-window.open("mailto:?subject=" + subject + "&body=" + body, "_blank");
-}
-function inviteMore() {
-if (navigator.share) {
-navigator.share({
-title: "Bureau Star Rating Quiz",
-text: "I just got my Bureau Star Rating — " + currentLabel + ". What's yours?",
-url: "yoursite.com/bureau-star-rating"
-});
-} else {
-copyInviteLink();
-}
-}
-
-// ── Helper: Show confirmation message ──
-function showMessage(id) {
-const msg = document.getElementById(id);
-msg.style.display = 'block';
-setTimeout(function() {
-msg.style.display = 'none';
-}, 3000);
-}
-</script>
+  <!-- ═══════════════════════════════════════════════
+       FOOTER
+  ═══════════════════════════════════════════════ -->
+  <footer role="contentinfo">
+    <p class="footer-disclaimer">
+      This experience is part of a genre-bending YA book. The Bureau is fictional. Your panic is optional.
+    </p>
+    <p class="footer-copy" aria-label="Copyright CC Francis, file RVS-001">
+      &copy; CC Francis · RVS-001
+    </p>
+  </footer>
 
 </body>
 </html>
