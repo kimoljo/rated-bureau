@@ -350,16 +350,15 @@ function toggleSecret() {
   }
 }
 
-// ── Close Quiz ──
+// ── Close Quiz — returns to Bureau HQ ──
 function closeQuiz() {
-  document.querySelector('.screen.active').classList.remove('active');
-  window.scrollTo(0, 0);
+  window.location.href = 'index.html';
 }
 
 // ── Initialize ──
-// FIX 10: removed console.log() statements that exposed initialization state
+// FIX 10: no console.log() statements
 document.addEventListener('DOMContentLoaded', function() {
-  // Quiz ready — no user data logged
+  // Quiz ready
 });
 
 // ── Copy Quiz Link (Under-18 Page) ──
@@ -404,7 +403,7 @@ let currentRating = 1;
 let currentLabel = "";
 let selectedAvatar = "";
 
-// Update showResult() to store rating info
+// ── Show Result ──
 function showResult(rating) {
   const result = RESULTS[rating];
   currentRating = rating;
@@ -457,7 +456,7 @@ function selectAvatar(card, code) {
   card.classList.add('selected');
   card.setAttribute('aria-pressed', 'true');
 
-  // Inject star badge
+  // Inject star badge using '★'.repeat(currentRating)
   var stars = '★'.repeat(currentRating);
   var badge = document.createElement('span');
   badge.className = 'avatar-star-badge';
