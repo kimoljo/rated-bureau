@@ -5,15 +5,151 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Bureau Star Rating Quiz</title>
   <link rel="stylesheet" href="bureau-quiz.css">
+  <style>
+    /* ── Screen visibility — embedded so screens work independently of external CSS ── */
+    .screen {
+      display: none;
+      width: 100%;
+      max-width: 680px;
+    }
+    .screen.active {
+      display: block;
+    }
+
+    /* ════════════════════════════════════════════
+       SUBJECT / AVATAR UI — results screen
+    ════════════════════════════════════════════ */
+
+    /* Section header line */
+    .subject-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: .62rem;
+      letter-spacing: .28em;
+      color: var(--bureau-light);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .subject-header-bar {
+      width: 3px;
+      height: 14px;
+      background: var(--bureau-light);
+      flex-shrink: 0;
+    }
+    .subject-subheader {
+      font-size: .58rem;
+      letter-spacing: .22em;
+      color: var(--bureau-muted);
+      text-transform: uppercase;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    /* 3-column grid, last item centred via auto margins */
+    .subject-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    /* 7th card: push to centre col */
+    .avatar-card:last-child:nth-child(7) {
+      grid-column: 2;
+    }
+
+    /* Individual card */
+    .avatar-card {
+      background: var(--bureau-mid);
+      border: 1px solid var(--bureau-border);
+      border-radius: 2px;
+      padding: 18px 8px 14px;
+      cursor: pointer;
+      text-align: center;
+      transition: background .15s, border-color .15s;
+      font-family: var(--font);
+      position: relative;
+    }
+    .avatar-card:hover {
+      background: #2f2f2f;
+      border-color: #555;
+    }
+    /* Selected: Bureau red border */
+    .avatar-card.selected {
+      border: 2px solid var(--star-5);
+      background: var(--bureau-grey);
+    }
+
+    /* Star badge injected above avatar by JS when selected */
+    .avatar-star-badge {
+      display: block;
+      font-size: .78rem;
+      letter-spacing: .08em;
+      color: var(--star-3);
+      margin-bottom: 6px;
+      line-height: 1;
+      opacity: 0;
+      transition: opacity .2s ease;
+    }
+    .avatar-star-badge.visible {
+      opacity: 1;
+    }
+
+    /* SVG avatar container */
+    .subject-avatar {
+      width: 64px;
+      height: 72px;
+      margin: 0 auto 10px;
+      display: block;
+    }
+
+    /* Label */
+    .subject-label {
+      font-size: .55rem;
+      letter-spacing: .18em;
+      color: var(--bureau-muted);
+      text-transform: uppercase;
+      display: block;
+    }
+    .avatar-card.selected .subject-label {
+      color: var(--bureau-light);
+    }
+
+    /* Status line below the grid */
+    .subject-status {
+      font-size: .6rem;
+      letter-spacing: .18em;
+      color: var(--bureau-muted);
+      text-transform: uppercase;
+      text-align: center;
+      min-height: 1.2em;
+      margin-top: 4px;
+    }
+
+    /* Screen-reader-only utility */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      white-space: nowrap;
+      border: 0;
+    }
+  </style>
 </head>
 <body>
 
 <!-- BUREAU STAR RATING QUIZ -->
+
 <!-- Screen 0: Age Gate -->
 <div id="ageGate" class="screen active">
   <div class="bureau-header">
     <div class="bureau-stamp">▓ BUREAU FILE ▓</div>
-    <h1 class="bureau-title">Initiating Clearance Check</h1>
+    <!-- FIX 5: tabindex="-1" allows programmatic focus from showScreen() -->
+    <h1 class="bureau-title" tabindex="-1">Initiating Clearance Check</h1>
   </div>
   <div class="card">
     <p class="age-prompt">Before we open your Bureau file, confirm your age:</p>
@@ -27,6 +163,8 @@
         <span>I am under 18</span>
       </label>
     </div>
+    <!-- FIX 9: inline role="alert" error replaces alert() -->
+    <span class="field-error" id="ageError" role="alert"></span>
     <button class="btn btn-primary" onclick="handleAgeGate()">Proceed to the Test →</button>
   </div>
   <p class="disclaimer">This quiz collects your name and email to deliver your result. Participants must be 18 or older.</p>
@@ -36,7 +174,8 @@
 <div id="under18" class="screen">
   <div class="bureau-header">
     <div class="bureau-stamp">▓ BUREAU FILE ▓</div>
-    <h1 class="bureau-title">Access Not Granted</h1>
+    <!-- FIX 5 -->
+    <h1 class="bureau-title" tabindex="-1">Access Not Granted</h1>
   </div>
 
   <div class="card">
@@ -74,8 +213,6 @@
     <button class="btn-close" onclick="closeQuiz()">✕ Close</button>
   </div>
 
-  </div>
-
   <p class="disclaimer">No data has been collected from this session.</p>
 </div>
 
@@ -83,7 +220,8 @@
 <div id="landing" class="screen">
   <div class="bureau-header">
     <div class="bureau-stamp">▓ BUREAU FILE ▓</div>
-    <h1 class="bureau-title">What Is Your Bureau Star Rating?</h1>
+    <!-- FIX 5 -->
+    <h1 class="bureau-title" tabindex="-1">What Is Your Bureau Star Rating?</h1>
     <p class="bureau-sub">Find out how a dystopian Bureau would rate you on paper. Your results are 100% made-up, but the fun (and mild panic) is real.</p>
     <p class="bureau-credit">Based on the YA thriller Rated: Revenge Is Starred by CC Francis.</p>
   </div>
@@ -92,12 +230,14 @@
     <div class="form-group">
       <label>First Name</label>
       <input type="text" id="userName" required>
-      <span class="field-error" id="nameError">Please enter your first name.</span>
+      <!-- FIX 9: role="alert" so errors are announced by screen readers -->
+      <span class="field-error" id="nameError" role="alert">Please enter your first name.</span>
     </div>
     <div class="form-group">
       <label>Email Address</label>
       <input type="email" id="userEmail" required>
-      <span class="field-error" id="emailError">Please enter a valid email address.</span>
+      <!-- FIX 9 -->
+      <span class="field-error" id="emailError" role="alert">Please enter a valid email address.</span>
     </div>
     <div class="opt-in-wrap" id="optInWrap">
       <input type="checkbox" id="optIn">
@@ -106,7 +246,8 @@
         <p class="opt-in-legal">By checking this box you agree to receive occasional email updates. This quiz is open to participants 18 or older. We will never sell your information. Unsubscribe anytime.</p>
       </div>
     </div>
-    <span class="field-error" id="optInError">Please confirm you'd like to receive Bureau transmissions to continue.</span>
+    <!-- FIX 9 -->
+    <span class="field-error" id="optInError" role="alert">Please confirm you'd like to receive Bureau transmissions to continue.</span>
     <button class="btn btn-primary" onclick="startQuiz()">Start the Bureau Test →</button>
   </div>
   <p class="disclaimer">This is a personality quiz for marketing a YA novel. Participation is voluntary, results are not real.</p>
@@ -116,7 +257,8 @@
 <div id="quiz" class="screen">
   <div class="bureau-header">
     <div class="bureau-stamp">▓ BUREAU FILE ▓</div>
-    <h1 class="bureau-title">What Is Your Bureau Star Rating?</h1>
+    <!-- FIX 5 -->
+    <h1 class="bureau-title" tabindex="-1">What Is Your Bureau Star Rating?</h1>
   </div>
   <div class="text-center" style="margin-bottom:28px;">
     <p class="small uppercase text-muted">Answer All 5 Fields</p>
@@ -127,8 +269,11 @@
       <span class="dot"></span>
       <span class="dot"></span>
     </div>
+    <!-- FIX 7: aria-live region announces progress to screen readers -->
+    <p id="progressStatus" class="sr-only" aria-live="polite" aria-atomic="true"></p>
   </div>
   <div id="questionsContainer"></div>
+  <!-- submitBtn kept in DOM; JS hides it and uses inline per-question nav instead -->
   <button class="btn btn-primary" id="submitBtn" onclick="calculateResult()" disabled>Get My Bureau Star Rating →</button>
   <p class="disclaimer">Results are fictional.</p>
 </div>
@@ -137,7 +282,8 @@
 <div id="result" class="screen">
   <div class="bureau-header">
     <div class="bureau-stamp">▓ BUREAU FILE ▓</div>
-    <h1 class="bureau-title">Classification Complete</h1>
+    <!-- FIX 5 -->
+    <h1 class="bureau-title" tabindex="-1">Classification Complete</h1>
   </div>
 
   <div class="card">
@@ -148,9 +294,124 @@
     <hr class="divider">
 
     <div id="secretNote">
-      <button class="secret-toggle" onclick="toggleSecret()">▼ Secret Note from the Bureau — click to reveal</button>
+      <!-- FIX 8: aria-expanded reflects toggle state, managed by JS -->
+      <button class="secret-toggle" onclick="toggleSecret()" aria-expanded="false">▼ Secret Note from the Bureau — click to reveal</button>
       <p class="secret-text" id="secretText" style="display: none;"></p>
     </div>
+
+    <hr class="divider">
+
+    <!-- ── Subject / Avatar Selection ── -->
+    <div class="subject-header">
+      <span class="subject-header-bar" aria-hidden="true"></span>
+      Assign Your Subject File · Optional
+      <span class="subject-header-bar" aria-hidden="true"></span>
+    </div>
+    <p class="subject-subheader">Select Your Agent Identity · All Classifications Equal</p>
+
+    <div class="subject-grid" id="subjectGrid" role="group" aria-label="Select your subject profile">
+
+      <!-- SUBJECT-F-01: medium-brown skin, long straight hair -->
+      <button class="avatar-card" onclick="selectAvatar(this, 'SUBJECT-F-01')" aria-label="Select Subject F-01" aria-pressed="false">
+        <svg class="subject-avatar" viewBox="0 0 64 72" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <!-- Hair -->
+          <ellipse cx="32" cy="18" rx="14" ry="16" fill="#6B3A2A"/>
+          <rect x="18" y="18" width="5" height="20" rx="2" fill="#6B3A2A"/>
+          <rect x="41" y="18" width="5" height="20" rx="2" fill="#6B3A2A"/>
+          <!-- Head -->
+          <ellipse cx="32" cy="22" rx="12" ry="13" fill="#C68642"/>
+          <!-- Body / torso -->
+          <path d="M16 55 C16 44 22 40 32 40 C42 40 48 44 48 55 L48 68 L16 68 Z" fill="#B87333"/>
+        </svg>
+        <span class="subject-label">Subject-F-01</span>
+      </button>
+
+      <!-- SUBJECT-F-02: light/tan skin, medium wavy hair -->
+      <button class="avatar-card" onclick="selectAvatar(this, 'SUBJECT-F-02')" aria-label="Select Subject F-02" aria-pressed="false">
+        <svg class="subject-avatar" viewBox="0 0 64 72" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <!-- Hair -->
+          <ellipse cx="32" cy="18" rx="13" ry="14" fill="#8B5E3C"/>
+          <rect x="19" y="20" width="4" height="16" rx="2" fill="#8B5E3C"/>
+          <rect x="41" y="20" width="4" height="16" rx="2" fill="#8B5E3C"/>
+          <!-- Head -->
+          <ellipse cx="32" cy="22" rx="12" ry="13" fill="#E8C49A"/>
+          <!-- Body / torso -->
+          <path d="M16 55 C16 44 22 40 32 40 C42 40 48 44 48 55 L48 68 L16 68 Z" fill="#D4A96A"/>
+        </svg>
+        <span class="subject-label">Subject-F-02</span>
+      </button>
+
+      <!-- SUBJECT-F-03: dark skin, short natural/afro hair -->
+      <button class="avatar-card" onclick="selectAvatar(this, 'SUBJECT-F-03')" aria-label="Select Subject F-03" aria-pressed="false">
+        <svg class="subject-avatar" viewBox="0 0 64 72" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <!-- Afro hair -->
+          <ellipse cx="32" cy="17" rx="15" ry="13" fill="#2C1A0E"/>
+          <!-- Head -->
+          <ellipse cx="32" cy="23" rx="11" ry="12" fill="#4A2810"/>
+          <!-- Body / torso -->
+          <path d="M16 55 C16 44 22 40 32 40 C42 40 48 44 48 55 L48 68 L16 68 Z" fill="#3D2010"/>
+        </svg>
+        <span class="subject-label">Subject-F-03</span>
+      </button>
+
+      <!-- SUBJECT-M-01: medium-tan skin, short hair -->
+      <button class="avatar-card" onclick="selectAvatar(this, 'SUBJECT-M-01')" aria-label="Select Subject M-01" aria-pressed="false">
+        <svg class="subject-avatar" viewBox="0 0 64 72" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <!-- Short hair cap -->
+          <ellipse cx="32" cy="18" rx="12" ry="10" fill="#7A4A28"/>
+          <!-- Head -->
+          <ellipse cx="32" cy="24" rx="12" ry="13" fill="#C8844A"/>
+          <!-- Body / torso -->
+          <path d="M16 55 C16 44 22 40 32 40 C42 40 48 44 48 55 L48 68 L16 68 Z" fill="#B8703A"/>
+        </svg>
+        <span class="subject-label">Subject-M-01</span>
+      </button>
+
+      <!-- SUBJECT-M-02: dark skin, very short/dark hair -->
+      <button class="avatar-card" onclick="selectAvatar(this, 'SUBJECT-M-02')" aria-label="Select Subject M-02" aria-pressed="false">
+        <svg class="subject-avatar" viewBox="0 0 64 72" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <!-- Very short hair -->
+          <ellipse cx="32" cy="19" rx="12" ry="9" fill="#1A0E06"/>
+          <!-- Head -->
+          <ellipse cx="32" cy="24" rx="12" ry="13" fill="#3A1E0A"/>
+          <!-- Body / torso -->
+          <path d="M16 55 C16 44 22 40 32 40 C42 40 48 44 48 55 L48 68 L16 68 Z" fill="#2E1608"/>
+        </svg>
+        <span class="subject-label">Subject-M-02</span>
+      </button>
+
+      <!-- SUBJECT-M-03: medium-tan skin, short hair -->
+      <button class="avatar-card" onclick="selectAvatar(this, 'SUBJECT-M-03')" aria-label="Select Subject M-03" aria-pressed="false">
+        <svg class="subject-avatar" viewBox="0 0 64 72" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <!-- Short hair cap -->
+          <ellipse cx="32" cy="18" rx="12" ry="10" fill="#6B4020"/>
+          <!-- Head -->
+          <ellipse cx="32" cy="24" rx="12" ry="13" fill="#C08040"/>
+          <!-- Body / torso -->
+          <path d="M16 55 C16 44 22 40 32 40 C42 40 48 44 48 55 L48 68 L16 68 Z" fill="#B07030"/>
+        </svg>
+        <span class="subject-label">Subject-M-03</span>
+      </button>
+
+      <!-- SUBJECT-NB-04: medium-brown skin, short rounded hair — centred in last row -->
+      <button class="avatar-card" onclick="selectAvatar(this, 'SUBJECT-NB-04')" aria-label="Select Subject NB-04" aria-pressed="false">
+        <svg class="subject-avatar" viewBox="0 0 64 72" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <!-- Rounded short hair -->
+          <ellipse cx="32" cy="18" rx="13" ry="11" fill="#5C3820"/>
+          <!-- Head -->
+          <ellipse cx="32" cy="24" rx="12" ry="13" fill="#A06030"/>
+          <!-- Body / torso -->
+          <path d="M16 55 C16 44 22 40 32 40 C42 40 48 44 48 55 L48 68 L16 68 Z" fill="#905020"/>
+        </svg>
+        <span class="subject-label">Subject-NB-04</span>
+      </button>
+
+    </div><!-- /.subject-grid -->
+
+    <!-- Status line — id="avatarStatus" matches JS selectAvatar() and showResult() -->
+    <p class="subject-status" id="avatarStatus" aria-live="polite">
+      No file assigned · result still shareable
+    </p>
 
     <hr class="divider">
 
@@ -217,439 +478,6 @@
   <p class="disclaimer">Results are fictional. Share with friends!</p>
 </div>
 
-<script>
-// ═══════════════════════════════════════════════════════
-// BUREAU STAR RATING QUIZ — JAVASCRIPT
-// Complete quiz logic with scoring, screen management,
-// and result calculation
-// ═══════════════════════════════════════════════════════
-
-// ── Quiz Data ──
-const QUESTIONS = [
-{
-id: 1,
-text: "When someone in power lies and you can prove it, you:",
-answers: [
-{ key: "A", text: "Stay quiet. It's not your problem.", points: 0 },
-{ key: "B", text: "Tell a friend, but don't rock the boat.", points: 1 },
-{ key: "C", text: "Leak receipts anonymously. Let the truth burn.", points: 2 },
-{ key: "D", text: "Walk into their office with the evidence and dare them to deny it.", points: 3 }
-]
-},
-{
-id: 2,
-text: "A stranger is being publicly humiliated online for something you're not sure they did. You:",
-answers: [
-{ key: "A", text: "Scroll past. Not your business.", points: 0 },
-{ key: "B", text: "Watch, but don't join in.", points: 1 },
-{ key: "C", text: "Dig for the real story before you take a side.", points: 2 },
-{ key: "D", text: "Start pulling records. If they're innocent, you'll blow the accuser up.", points: 3 }
-]
-},
-{
-id: 3,
-text: "Rules are:",
-answers: [
-{ key: "A", text: "There to keep everyone safe.", points: 0 },
-{ key: "B", text: "There for most people, most of the time.", points: 1 },
-{ key: "C", text: "Suggestions you weigh against the fallout.", points: 2 },
-{ key: "D", text: "Bars on a cage. You're already looking for the weak points.", points: 3 }
-]
-},
-{
-id: 4,
-text: "Someone you love is in danger because of a system \"too big to fight.\" You:",
-answers: [
-{ key: "A", text: "Accept it. You can't change everything.", points: 0 },
-{ key: "B", text: "Look for official appeal routes.", points: 1 },
-{ key: "C", text: "Start planning an end-run around the rules.", points: 2 },
-{ key: "D", text: "Kick the doors in and worry about consequences later.", points: 3 }
-]
-},
-{
-id: 5,
-text: "If you could see your star rating, would you want to know?",
-answers: [
-{ key: "A", text: "No. It would just stress me out.", points: 0 },
-{ key: "B", text: "Maybe, if I could change it.", points: 1 },
-{ key: "C", text: "Yes. Information is leverage.", points: 2 },
-{ key: "D", text: "Absolutely. Then I'd know exactly what I'm fighting.", points: 3 }
-]
-}
-];
-
-// Result data
-const RESULTS = {
-1: {
-stars: "1 STAR",
-label: "QUIET CIVILIAN",
-color: "color-1",
-headline: "★ 1 STAR — QUIET CIVILIAN",
-extra: "The Bureau would like to thank you for your quiet cooperation.",
-secret: "Stay small, stay quiet, and the system may never see you coming."
-},
-3: {
-stars: "3 STARS",
-label: "CONTAINED ASSET",
-color: "color-3",
-headline: "★★★ 3 STARS — CONTAINED ASSET",
-extra: "",
-secret: "You are valuable, but only as long as you stay exactly where we've put you."
-},
-5: {
-stars: "5 STARS",
-label: "ENFORCEMENT-GRADE",
-color: "color-5",
-headline: "★★★★★ 5 STARS — ENFORCEMENT-GRADE",
-extra: "",
-secret: "You were never meant to be safe — you were built to be pointed at a target and released."
-}
-};
-
-// ── State Management ──
-let userAnswers = {};
-let userName = "";
-let userEmail = "";
-let optedIn = false;
-
-// ── Screen Management ──
-function showScreen(screenId) {
-document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-document.getElementById(screenId).classList.add('active');
-window.scrollTo(0, 0);
-}
-
-// ── Age Gate Handler ──
-function handleAgeGate() {
-const selected = document.querySelector('input[name="age"]:checked');
-if (!selected) {
-alert('Please select your age range to continue.');
-return;
-}
-if (selected.value === '18plus') {
-showScreen('landing');
-} else {
-showScreen('under18');
-}
-}
-
-// ── Start Quiz ──
-function startQuiz() {
-userName = document.getElementById('userName').value.trim();
-userEmail = document.getElementById('userEmail').value.trim();
-optedIn = document.getElementById('optIn').checked;
-let valid = true;
-// Clear all previous errors
-['userName', 'userEmail'].forEach(id => {
-document.getElementById(id).classList.remove('input-error');
-});
-document.getElementById('optInWrap').classList.remove('opt-in-error');
-document.querySelectorAll('.field-error').forEach(el => el.classList.remove('visible'));
-// Name check
-if (!userName) {
-document.getElementById('userName').classList.add('input-error');
-document.getElementById('nameError').classList.add('visible');
-valid = false;
-}
-// Email check — empty
-if (!userEmail) {
-document.getElementById('userEmail').classList.add('input-error');
-document.getElementById('emailError').textContent = 'Please enter your email address.';
-document.getElementById('emailError').classList.add('visible');
-valid = false;
-// Email check — format
-} else if (!userEmail.includes('@') || !userEmail.includes('.') || userEmail.indexOf('@') > userEmail.lastIndexOf('.') - 1) {
-document.getElementById('userEmail').classList.add('input-error');
-document.getElementById('emailError').textContent = 'Please enter a valid email address (e.g. name@example.com).';
-document.getElementById('emailError').classList.add('visible');
-valid = false;
-}
-// Opt-in check
-if (!optedIn) {
-document.getElementById('optInWrap').classList.add('opt-in-error');
-document.getElementById('optInError').classList.add('visible');
-valid = false;
-}
-if (!valid) return;
-// All good — proceed
-console.log('User Data:', { userName, userEmail, optedIn });
-renderQuiz();
-showScreen('quiz');
-}
-
-// ── Render Quiz Questions ──
-function renderQuiz() {
-const container = document.getElementById('questionsContainer');
-container.innerHTML = '';
-QUESTIONS.forEach((q, index) => {
-const block = document.createElement('div');
-block.className = 'question-block';
-block.id = `q${q.id}`;
-block.innerHTML = `
-<div class="question-num">Field ${String(index + 1).padStart(2, '0')} of 05</div>
-<div class="question-text">${q.text}</div>
-<div class="answers">
-${q.answers.map(a => `
-<button class="answer-btn" onclick="selectAnswer(event, ${q.id}, '${a.key}', ${a.points})">
-<span class="answer-key">${a.key}.</span>
-<span>${a.text}</span>
-</button>
-`).join('')}
-</div>
-`;
-container.appendChild(block);
-});
-}
-
-// ── Select Answer ──
-function selectAnswer(event, questionId, answerKey, points) {
-// Store answer
-userAnswers[questionId] = { key: answerKey, points };
-// Update UI
-const block = document.getElementById(`q${questionId}`);
-block.classList.add('answered');
-// Highlight selected answer
-block.querySelectorAll('.answer-btn').forEach(btn => {
-btn.classList.remove('selected');
-});
-event.target.closest('.answer-btn').classList.add('selected');
-// Update progress dots
-updateProgressDots();
-// Enable submit if all answered
-checkCompletion();
-}
-
-// ── Update Progress Dots ──
-function updateProgressDots() {
-const dots = document.querySelectorAll('.dot');
-const answered = Object.keys(userAnswers).length;
-dots.forEach((dot, index) => {
-if (index < answered) {
-dot.classList.add('answered');
-} else {
-dot.classList.remove('answered');
-}
-});
-}
-
-// ── Check Completion ──
-function checkCompletion() {
-const submitBtn = document.getElementById('submitBtn');
-if (Object.keys(userAnswers).length === QUESTIONS.length) {
-submitBtn.disabled = false;
-} else {
-submitBtn.disabled = true;
-}
-}
-
-// ── Calculate Result ──
-function calculateResult() {
-const totalPoints = Object.values(userAnswers).reduce((sum, answer) => sum + answer.points, 0);
-// Score banding:
-// 0-4 points → 1 star
-// 5-10 points → 3 stars
-// 11-15 points → 5 stars
-let rating;
-if (totalPoints <= 4) {
-rating = 1;
-} else if (totalPoints <= 10) {
-rating = 3;
-} else {
-rating = 5;
-}
-// Log result (in production, send to ESP with tag rating_1/rating_3/rating_5)
-console.log('Quiz Result:', {
-userName,
-userEmail,
-optedIn,
-totalPoints,
-rating,
-tag: `rating_${rating}`
-});
-showResult(rating);
-}
-
-// ── Toggle Secret Note ──
-function toggleSecret() {
-const text = document.getElementById('secretText');
-const button = document.querySelector('.secret-toggle');
-if (text.style.display === 'block') {
-text.style.display = 'none';
-button.textContent = '▼ Secret Note from the Bureau — click to reveal';
-} else {
-text.style.display = 'block';
-button.textContent = '▲ Secret Note from the Bureau — click to hide';
-}
-}
-
-// ── Close Quiz ──
-function closeQuiz() {
-document.querySelector('.screen.active').classList.remove('active');
-window.scrollTo(0, 0);
-}
-
-// ── Initialize ──
-document.addEventListener('DOMContentLoaded', function() {
-console.log('Bureau Star Rating Quiz initialized');
-console.log('Ready to collect data for ESP integration');
-});
-
-// ── Copy Quiz Link (Under-18 Page) ──
-function copyQuizLink() {
-const input = document.getElementById('quizLinkInput');
-input.select();
-input.setSelectionRange(0, 99999); // For mobile
-navigator.clipboard.writeText(input.value).then(() => {
-const msg = document.getElementById('linkCopied');
-msg.style.display = 'block';
-setTimeout(() => {
-msg.style.display = 'none';
-}, 3000);
-});
-}
-
-// ── Text to Parent (Under-18 Page) ──
-function textParent() {
-const message = encodeURIComponent(
-"Can you take this quiz and show me your Bureau Star Rating? I want to see what you get.\n\n" +
-"yoursite.com/bureau-star-rating\n\n" +
-"#RatedRevengeIsStarred"
-);
-// Try native share first (mobile)
-if (navigator.share) {
-navigator.share({
-title: 'Bureau Star Rating Quiz',
-text: "Can you take this quiz and show me your Bureau Star Rating? I want to see what you get.",
-url: 'yoursite.com/bureau-star-rating'
-}).catch(() => {
-// Fallback to SMS
-window.open(`sms:?body=${message}`, '_blank');
-});
-} else {
-// Desktop/older browsers: open SMS
-window.open(`sms:?body=${message}`, '_blank');
-}
-}
-
-// ── Global result data ──
-let currentRating = 1;
-let currentLabel = "";
-
-// Update showResult() to store rating info
-function showResult(rating) {
-const result = RESULTS[rating];
-currentRating = rating;
-currentLabel = `${result.stars} – ${result.label}`;
-document.getElementById('resultHeadline').textContent = result.headline;
-document.getElementById('resultHeadline').className = `result-headline ${result.color}`;
-const extraEl = document.getElementById('resultExtra');
-if (result.extra) {
-extraEl.textContent = result.extra;
-extraEl.style.display = 'block';
-} else {
-extraEl.style.display = 'none';
-}
-document.getElementById('secretText').textContent = result.secret;
-// Populate caption placeholders
-document.getElementById('captionLong').textContent = currentLabel;
-document.getElementById('captionShort').textContent = currentLabel;
-showScreen('result');
-}
-
-// ── Toggle Share Captions ──
-function toggleShareCaptions() {
-const chooser = document.getElementById('captionChooser');
-chooser.style.display = chooser.style.display === 'none' ? 'block' : 'none';
-}
-
-// ── Copy Caption ──
-function copyCaption(e, type) {
-let text = "";
-if (type === 'long') {
-text = "The Bureau just filed my Bureau Star Rating. I got " + currentLabel + ". I'm officially part of the experiment — want in? Take the quiz and tell me what you get. #RatedRevengeIsStarred";
-} else {
-text = "The Bureau rated me " + currentLabel + ". You in? #RatedRevengeIsStarred";
-}
-navigator.clipboard.writeText(text).then(function() {
-document.querySelectorAll('.caption-btn').forEach(function(btn) {
-btn.classList.remove('selected');
-});
-if (e) { // ← guard: only highlight button when called from a real click
-var clickedBtn = e.target.closest('.caption-btn');
-if (clickedBtn) {
-clickedBtn.classList.add('selected');
-}
-}
-showMessage('captionCopied');
-});
-}
-
-// ── Share to Social Platforms ──
-function shareToX() {
-const text = encodeURIComponent("The Bureau rated me " + currentLabel + ". You in? #RatedRevengeIsStarred\n\nyoursite.com/bureau-star-rating");
-window.open("https://twitter.com/intent/tweet?text=" + text, "_blank");
-}
-function shareToFacebook() {
-window.open("https://www.facebook.com/sharer/sharer.php?u=yoursite.com/bureau-star-rating", "_blank");
-}
-function shareToInstagram() {
-copyCaption(null, 'short');
-showMessage('socialCopied');
-}
-function shareToTikTok() {
-copyCaption(null, 'short');
-showMessage('socialCopied');
-}
-function shareToLinkedIn() {
-window.open("https://www.linkedin.com/sharing/share-offsite/?url=yoursite.com/bureau-star-rating", "_blank");
-}
-function shareToPinterest() {
-const desc = encodeURIComponent("The Bureau rated me " + currentLabel + ". Take the quiz!");
-window.open("https://pinterest.com/pin/create/button/?url=yoursite.com/bureau-star-rating&description=" + desc, "_blank");
-}
-
-// ── Invite Functions ──
-function copyInviteLink() {
-const input = document.getElementById('resultQuizLink');
-input.select();
-navigator.clipboard.writeText(input.value).then(function() {
-showMessage('inviteCopied');
-});
-}
-function inviteViaText() {
-const msg = encodeURIComponent("I just got my Bureau Star Rating — " + currentLabel + ". What's yours? Take the quiz: yoursite.com/bureau-star-rating #RatedRevengeIsStarred");
-window.open("sms:?body=" + msg, "_blank");
-}
-function inviteViaWhatsApp() {
-const msg = encodeURIComponent("I just got my Bureau Star Rating — " + currentLabel + ". What's yours? Take the quiz: yoursite.com/bureau-star-rating");
-window.open("https://wa.me/?text=" + msg, "_blank");
-}
-function inviteViaEmail() {
-const subject = encodeURIComponent("The Bureau just rated me — what's your score?");
-const body = encodeURIComponent("I just got my Bureau Star Rating — " + currentLabel + ". What's yours?\n\nTake the quiz: yoursite.com/bureau-star-rating\n\n#RatedRevengeIsStarred");
-window.open("mailto:?subject=" + subject + "&body=" + body, "_blank");
-}
-function inviteMore() {
-if (navigator.share) {
-navigator.share({
-title: "Bureau Star Rating Quiz",
-text: "I just got my Bureau Star Rating — " + currentLabel + ". What's yours?",
-url: "yoursite.com/bureau-star-rating"
-});
-} else {
-copyInviteLink();
-}
-}
-
-// ── Helper: Show confirmation message ──
-function showMessage(id) {
-const msg = document.getElementById(id);
-msg.style.display = 'block';
-setTimeout(function() {
-msg.style.display = 'none';
-}, 3000);
-}
-</script>
-
+<script src="bureau-quiz.js"></script>
 </body>
 </html>
