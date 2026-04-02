@@ -352,7 +352,7 @@ function toggleSecret() {
 
 // ── Close Quiz — returns to Bureau HQ ──
 function closeQuiz() {
-  window.location.href = 'index.html';
+  window.location.href = 'rated-revenge-is-starred-2.html';
 }
 
 // ── Initialize ──
